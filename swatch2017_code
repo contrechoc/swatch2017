@@ -1,0 +1,172 @@
+/* swatch2017 Beam
+ *  
+ATtiny85
+connecions
+
+PB0 2 LED's
+PB1 2 LED's
+PB2 ADC
+PB3 ADC
+PB4 LED's
+
+LED's connected so that we connect 4 led's alternately
+
+ADC connected to carbon non-woven
+
+PB2 close side
+PB3 far side
+
+over the carbon non woven we apply the Voltage
+upper rail = V
+lower rail = GND
+
+
+*/
+
+int PIN[2] = { 2, 3 };
+int analog1 = 1;
+int analog2 = 3;
+
+char test1 = 0;
+char test2 = 0;
+char test3 = 1;
+
+char  upricht = 0; //turning the configuration, with connections up
+//used for swatch is connections to the left
+
+int treshold = 40;
+
+void setup() {
+  pinMode(PB0, OUTPUT);
+  pinMode(PB1, OUTPUT);
+  pinMode(PB4, OUTPUT);
+  all_LOW();
+  //test round
+  LED1(); delay(500);
+  LED2(); delay(500);
+  LED3(); delay(500);
+  LED4(); delay(500);
+
+  //calibrate
+  calibrate(analog1);
+  calibrate(analog2);
+
+}
+void LED1() { 
+  digitalWrite( PB1, LOW);
+  digitalWrite( PB0, HIGH);
+  digitalWrite( PB4, HIGH);
+
+}
+void LED2() {
+  digitalWrite( PB1, HIGH);
+  digitalWrite( PB0, LOW);
+  digitalWrite( PB4, LOW);
+
+}
+void LED3() {
+  digitalWrite( PB1, HIGH);
+  digitalWrite( PB0, HIGH);
+  digitalWrite( PB4, LOW);
+}
+void LED4() {
+  digitalWrite( PB1, LOW);
+  digitalWrite( PB0, LOW);
+  digitalWrite( PB4, HIGH);
+}
+void all_LOW() {
+  digitalWrite( PB1, LOW);
+  digitalWrite( PB0, LOW);
+  digitalWrite( PB4, LOW);
+
+}
+void calibrate(int whichPin) {
+  int h = 0;
+  for (int i = 0; i < 5; i++) {
+    h += analogRead(whichPin) / 5;
+    delay(10);
+  }
+  if ( whichPin == analog1)
+    PIN[0] = h;
+  if ( whichPin == analog2)
+    PIN[1] = h;
+
+}
+
+int measure(int whichPin) {
+  int h = 0;
+  for (int i = 0; i < 5; i++) {
+    h += analogRead(whichPin) / 5;
+    delay(10);
+  }
+  return h;
+}
+
+void loop() {
+
+  if ( test1 == 1 ) { //testing ADC2
+    all_LOW();
+    int mPB2 = measure(analog1);
+    if ( abs ( mPB2  - PIN[0]) > treshold ) {
+      if (   mPB2  > PIN[0] ) LED2();
+      else if ( mPB2  < PIN[0] ) LED1();
+      calibrate(analog1);
+    }
+  }
+  if ( test2 == 1 ) { //testing ADC3
+    all_LOW();
+    int mPB3 = measure(analog2);
+    if ( abs ( mPB3  - PIN[1]) > treshold ) {
+      if (   mPB3  > PIN[1] ) LED4();
+      else if ( mPB3  < PIN[1] ) LED3();
+      calibrate(analog2);
+    }
+  }
+
+  if ( test3 == 1 ) { //testing the configuration, both ADC2 and ADC3
+    all_LOW();
+    int mPB2 = measure(analog1);
+    int mPB3 = measure(analog2);
+    int diff1 = mPB2  - PIN[0];
+    int diff2 = mPB3  - PIN[1];
+
+    if ( (abs ( diff1) > treshold) ||  (abs ( diff2) > treshold) ) {
+      if ( abs(diff1) > abs(diff2) ) {
+ 
+        delay(100);
+        if (   mPB2  < PIN[0] ) {
+          if( upricht == 1 )
+          LED2(); // -sort of PB0 led
+          else
+          LED4(); // sort of PB5 led
+        }
+        else  {
+            if( upricht == 1 )
+          LED1(); // - sort of PB1 led
+else
+           LED2(); // -sort of PB0 led
+        }
+
+      } else  {
+ 
+        delay(100);
+        if (   mPB3  < PIN[1] ) {
+            if( upricht == 1 )
+          LED4(); // sort of PB5 led
+else
+           LED3(); // - sort of PB4 led
+        }
+        else   {
+            if( upricht == 1 )
+          LED3(); // - sort of PB4 led
+else
+           LED1(); // - sort of PB1 led
+        }
+      }
+      calibrate(analog1);
+      calibrate(analog2);
+      delay(2000);
+    }
+  }
+  
+}
