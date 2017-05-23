@@ -8,4 +8,4 @@ uses the potential drop over the rectangular sheet to detect ad which side and u
 
 carbon non woven: high resistance type
 
-see: http://etextile-summercamp.org/swatch-exchange/droplet_on_carbon/
+see: http://etextile-summercamp.org/swatch-exchange/inessential/
